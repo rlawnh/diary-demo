@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>초간단 로그인</title>
+  <style>
+    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f7f6; }
+    .container { background: white; padding: 40px; border-radius: 10px; width: 300px; text-align: center; }
+    input, button { width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; }
+    button { background-color: #2196F3; color: white; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>로그인</h2>
+  <input type="text" id="loginId" placeholder="아이디">
+  <input type="password" id="password" placeholder="비밀번호">
+  <button onclick="sendLoginData()">로그인 하기</button>
+</div>
+
+<script>
+  function sendLoginData() {
+      const reqData = {
+          loginId: document.getElementById('loginId').value,
+          password: document.getElementById('password').value
+      };
+
+      fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(reqData)
+      })
+      .then(async response => {
+          const text = await response.text();
+          if (response.ok) {
+              alert("✅ " + text);
+
+              // 🌟 핵심: "1번 회원님..." 문장에서 숫자만 추출하기 (예: "1")
+              const memberId = text.replace(/[^0-9]/g, "");
+
+              // 브라우저 비밀 금고(localStorage)에 회원번호 몰래 저장하기!
+              localStorage.setItem('loggedInMemberId', memberId);
+
+              // 일기장으로 이동
+              window.location.href = '/diary.html';
+          } else {
+              alert("🚨 실패: " + text);
+          }
+      });
+  }
+</script>
+</body>
+</html>

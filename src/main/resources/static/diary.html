@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>My DIARY</title>
+  <style>
+    body { font-family: '맑은 고딕', sans-serif; background-color: #f0f2f5; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .app-container { background-color: white; width: 400px; height: 800px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+    .header { padding: 30px 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .header-title { font-size: 2em; font-weight: lighter; letter-spacing: 2px; }
+    .header-user { font-size: 1.1em; color: #555; font-weight: bold; }
+
+    /* 화살표 누를 수 있게 디자인 수정 */
+    .month-selector { text-align: center; font-size: 1.2em; margin-bottom: 20px; color: #333; display: flex; justify-content: center; align-items: center; gap: 20px; }
+    .nav-btn { cursor: pointer; color: #888; transition: 0.2s; user-select: none; }
+    .nav-btn:hover { color: #333; font-weight: bold; }
+
+    .calendar { padding: 0 20px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; text-align: center; }
+    .day-header { color: #888; font-size: 0.9em; margin-bottom: 10px; }
+    .day { width: 40px; height: 40px; line-height: 40px; margin: auto; border-radius: 50%; cursor: pointer; transition: 0.2s; font-size: 1.1em; }
+    .day:hover { background-color: #eee; }
+    .has-diary { background-color: #f8bbd0; color: #d81b60; font-weight: bold; }
+    .empty-day { pointer-events: none; } /* 빈 칸은 클릭 안 되게! */
+
+    .diary-modal { position: absolute; top: 100%; left: 0; width: 100%; height: 100%; background: white; transition: 0.3s; padding: 40px 30px; box-sizing: border-box; display: flex; flex-direction: column; z-index: 10; }
+    .diary-modal.show { top: 0; }
+    .modal-date { text-align: center; font-size: 1.2em; margin-bottom: 30px; color: #333; }
+    input, textarea { width: 100%; padding: 15px; margin-bottom: 20px; border: 1px solid #ccc; font-size: 1.1em; box-sizing: border-box; }
+    .action-btn { padding: 15px; background-color: white; color: #333; border: 1px solid #ccc; font-size: 1.1em; cursor: pointer; align-self: flex-end; width: 80px; }
+    .action-btn:hover { background-color: #f9f9f9; }
+    .close-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 1.5em; cursor: pointer; color: #888; }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="header">
+    <div class="header-title">My DIARY</div>
+    <div class="header-user" id="userName">로딩중...</div>
+  </div>
+
+  <div class="month-selector">
+    <span class="nav-btn" onclick="changeMonth(-1)">◁</span>
+    <span id="currentMonthText">2026년 6월</span>
+    <span class="nav-btn" onclick="changeMonth(1)">▷</span>
+  </div>
+
+  <div class="calendar">
+    <div class="day-header">일</div><div class="day-header">월</div><div class="day-header">화</div>
+    <div class="day-header">수</div><div class="day-header">목</div><div class="day-header">금</div><div class="day-header">토</div>
+  </div>
+  <div class="calendar" id="calendar-days"></div>
+
+  <div class="diary-modal" id="diaryModal">
+    <button class="close-btn" onclick="closeModal()">✕</button>
+    <div class="modal-date" id="selectedDateText">날짜</div>
+    <input type="text" id="title" placeholder="제목">
+    <textarea id="content" rows="12" placeholder="내용"></textarea>
+    <button class="action-btn" id="saveBtn" onclick="saveOrUpdateDiary()">저장</button>
+  </div>
+</div>
+
+<script>
+  const memberId = localStorage.getItem('loggedInMemberId');
+  if(!memberId) {
+      alert("로그인이 필요한 서비스입니다!");
+      window.location.href = '/login.html';
+  }
+
+  // 달력을 그리기 위한 기준 날짜 (처음엔 오늘 날짜로 세팅)
+  let currentViewDate = new Date();
+  let selectedDate = "";
+  let currentDiaryId = null;
+
+  window.onload = async function() {
+      // 1. 백엔드에 이름 물어봐서 띄워주기!
+      const nameRes = await fetch(`/api/members/${memberId}/name`);
+      if(nameRes.ok) {
+          const name = await nameRes.text();
+          document.getElementById('userName').innerText = name + "님";
+      }
+
+      // 2. 달력 그리기 실행
+      renderCalendar();
+  };
+
+  // 화살표 누를 때마다 달을 더하거나 빼는 함수
+  function changeMonth(offset) {
+      currentViewDate.setMonth(currentViewDate.getMonth() + offset);
+      renderCalendar();
+  }
+
+  // 진짜 달력 계산해서 그리는 핵심 함수
+  async function renderCalendar() {
+      const year = currentViewDate.getFullYear();
+      const month = currentViewDate.getMonth() + 1; // getMonth()는 0부터 시작해서 +1 필요
+
+      document.getElementById('currentMonthText').innerText = `${year}년 ${month}월`;
+
+      // 이번 달 1일의 요일 (0:일요일 ~ 6:토요일) -> 앞에 빈칸을 몇 개 뚫을지 결정!
+      const firstDayOfWeek = new Date(year, month - 1, 1).getDay();
+      // 이번 달의 마지막 날짜 (예: 28, 30, 31)
+      const lastDate = new Date(year, month, 0).getDate();
+
+      // 백엔드에서 일기 쓴 날짜 싹 다 가져오기
+      const response = await fetch('/api/diary/dates?memberId=' + memberId);
+      const writtenDates = await response.json();
+
+      const calendarDays = document.getElementById('calendar-days');
+      calendarDays.innerHTML = ""; // 기존에 그려진 달력 싹 지우기
+
+      // 1. 달력 앞부분 빈칸 채우기
+      for(let i = 0; i < firstDayOfWeek; i++) {
+          const emptyDiv = document.createElement('div');
+          emptyDiv.className = 'day empty-day';
+          calendarDays.appendChild(emptyDiv);
+      }
+
+      // 2. 진짜 날짜 채우기
+      for(let i = 1; i <= lastDate; i++) {
+          const paddedMonth = month < 10 ? '0' + month : month;
+          const paddedDay = i < 10 ? '0' + i : i;
+          const fullDate = `${year}-${paddedMonth}-${paddedDay}`;
+
+          const dayDiv = document.createElement('div');
+          dayDiv.className = 'day';
+          dayDiv.innerText = i;
+
+          if(writtenDates.includes(fullDate)) {
+              dayDiv.classList.add('has-diary');
+          }
+
+          dayDiv.onclick = () => openModal(fullDate, year, month, i);
+          calendarDays.appendChild(dayDiv);
+      }
+  }
+
+  // 모달창 열기
+  async function openModal(fullDate, year, month, dayNumber) {
+      selectedDate = fullDate;
+      document.getElementById('selectedDateText').innerText = `${year}년 ${month}월 ${dayNumber}일`;
+
+      const response = await fetch(`/api/diary?memberId=${memberId}&date=${fullDate}`);
+      if (response.ok && response.status === 200) {
+          const text = await response.text();
+          if(text) {
+              const diary = JSON.parse(text);
+              document.getElementById('title').value = diary.title;
+              document.getElementById('content').value = diary.content;
+              currentDiaryId = diary.id;
+              document.getElementById('saveBtn').innerText = "수정";
+          }
+      } else {
+          document.getElementById('title').value = "";
+          document.getElementById('content').value = "";
+          currentDiaryId = null;
+          document.getElementById('saveBtn').innerText = "저장";
+      }
+      document.getElementById('diaryModal').classList.add('show');
+  }
+
+  function closeModal() {
+      document.getElementById('diaryModal').classList.remove('show');
+  }
+
+  async function saveOrUpdateDiary() {
+      const title = document.getElementById('title').value;
+      const content = document.getElementById('content').value;
+
+      if (currentDiaryId) {
+          const reqData = { title: title, content: content };
+          await fetch(`/api/diary/${currentDiaryId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(reqData)
+          });
+      } else {
+          const reqData = { memberId: parseInt(memberId), date: selectedDate, title: title, content: content };
+          await fetch('/api/diary', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(reqData)
+          });
+      }
+      // 저장 후 모달 닫고 달력 다시 그리기 (새로고침 없이!)
+      closeModal();
+      renderCalendar();
+  }
+</script>
+</body>
+</html>
