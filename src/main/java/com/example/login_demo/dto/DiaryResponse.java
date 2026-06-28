@@ -10,4 +10,5 @@ public class DiaryResponse {
     private Long id;
     private String title;
     private String content;
+    /*test branch*/
 }
