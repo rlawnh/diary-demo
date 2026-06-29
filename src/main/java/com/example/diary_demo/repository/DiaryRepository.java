@@ -1,7 +1,7 @@
-package com.example.login_demo.repository;
+package com.example.diary_demo.repository;
 
-import com.example.login_demo.entity.Diary;
-import com.example.login_demo.entity.Member;
+import com.example.diary_demo.entity.Diary;
+import com.example.diary_demo.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;

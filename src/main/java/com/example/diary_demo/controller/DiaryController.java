@@ -1,9 +1,9 @@
-package com.example.login_demo.controller;
+package com.example.diary_demo.controller;
 
-import com.example.login_demo.dto.DiaryResponse;
-import com.example.login_demo.dto.UpdateDiaryRequest;
-import com.example.login_demo.dto.WriteDiaryRequest;
-import com.example.login_demo.service.DiaryService;
+import com.example.diary_demo.dto.DiaryResponse;
+import com.example.diary_demo.dto.UpdateDiaryRequest;
+import com.example.diary_demo.dto.WriteDiaryRequest;
+import com.example.diary_demo.service.DiaryService;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;

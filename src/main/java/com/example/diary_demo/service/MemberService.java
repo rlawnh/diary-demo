@@ -1,7 +1,7 @@
-package com.example.login_demo.service;
+package com.example.diary_demo.service;
 
-import com.example.login_demo.entity.Member;
-import com.example.login_demo.repository.MemberRepository;
+import com.example.diary_demo.entity.Member;
+import com.example.diary_demo.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

@@ -1,9 +1,9 @@
-package com.example.login_demo.controller;
+package com.example.diary_demo.controller;
 
-import com.example.login_demo.dto.LoginRequest;
-import com.example.login_demo.dto.SignUpRequest;
-import com.example.login_demo.entity.Member;
-import com.example.login_demo.service.MemberService;
+import com.example.diary_demo.dto.LoginRequest;
+import com.example.diary_demo.dto.SignUpRequest;
+import com.example.diary_demo.entity.Member;
+import com.example.diary_demo.service.MemberService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController //외부와 통신하는 api창구

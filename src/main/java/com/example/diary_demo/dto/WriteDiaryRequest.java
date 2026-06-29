@@ -1,4 +1,4 @@
-package com.example.login_demo.dto;
+package com.example.diary_demo.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;

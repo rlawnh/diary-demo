@@ -1,10 +1,10 @@
-package com.example.login_demo.service;
+package com.example.diary_demo.service;
 
-import com.example.login_demo.dto.DiaryResponse;
-import com.example.login_demo.entity.Diary;
-import com.example.login_demo.entity.Member;
-import com.example.login_demo.repository.DiaryRepository;
-import com.example.login_demo.repository.MemberRepository;
+import com.example.diary_demo.dto.DiaryResponse;
+import com.example.diary_demo.entity.Diary;
+import com.example.diary_demo.entity.Member;
+import com.example.diary_demo.repository.DiaryRepository;
+import com.example.diary_demo.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

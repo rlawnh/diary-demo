@@ -1,6 +1,6 @@
-package com.example.login_demo.repository;
+package com.example.diary_demo.repository;
 
-import com.example.login_demo.entity.Member;
+import com.example.diary_demo.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

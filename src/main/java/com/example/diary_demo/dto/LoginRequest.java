@@ -1,11 +1,10 @@
-package com.example.login_demo.dto;
+package com.example.diary_demo.dto;
 
 import lombok.Getter;
 
 @Getter
-public class SignUpRequest {
+public class LoginRequest {
 
     private String loginId;
     private String password;
-    private String name;
 }
